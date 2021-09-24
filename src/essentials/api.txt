@@ -1,0 +1,7 @@
+apiKey: "AIzaSyBgBLWACBvXnwEWh8Q3SYnjP568QVtnHpg",
+  authDomain: "slacker-e96cc.firebaseapp.com",
+  projectId: "slacker-e96cc",
+  storageBucket: "slacker-e96cc.appspot.com",
+  messagingSenderId: "599289058120",
+  appId: "1:599289058120:web:5aac4cdaf9397189f3197d",
+  measurementId: "G-2RW4FCFJ7F"
