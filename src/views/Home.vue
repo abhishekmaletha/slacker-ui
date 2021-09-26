@@ -20,7 +20,6 @@
         <div v-if="!slackInt">
           <a
             href="https://slack.com/oauth/v2/authorize?client_id=2508798833572.2502950839362&scope=app_mentions:read,channels:join,channels:read,chat:write.customize,chat:write,commands,incoming-webhook&user_scope="
-            target="._blank"
             ><img
               alt="Add to Slack"
               height="40"
@@ -67,14 +66,14 @@ export default {
       slacker: "slacker",
     }),
     codeGrep() {
-      this.test({ name: "hello maletha ji" });
+      // this.test({ name: "hello maletha ji" });
       // console.log("uid is ", this.uid);
       // console.log("tested is", this.tested);
       console.log("in codeGrep");
       var urlParams = new URLSearchParams(window.location.search);
       var params = Object.fromEntries(urlParams.entries());
       var code = params.code;
-      // console.log(code);
+      console.log(code);
       if (code) {
         const clientID = `${process.env.VUE_SLACK_CLIENT_ID}`;
         const clientSECRET = `${process.env.VUE_SLACK_CLIENT_SECRET}`;
