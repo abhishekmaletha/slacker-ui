@@ -5,6 +5,7 @@ import store from './store';
 firebase.auth().onAuthStateChanged(function (user) {
     if (user) {
         console.log('in auth.js ', user);
+        localStorage.setItem("uid", user.uid);
         store.commit(`user/USER_DETAILS`, user);
     } else {
         store.commit(`user/LOGOUT`);

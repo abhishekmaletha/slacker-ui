@@ -14,6 +14,8 @@
       </v-avatar>
 
       {{ userProfile.name }} has been logged in via Google Authentication
+      <!-- <p v-if="tested">tested</p>
+      <p v-else>failed</p> -->
       <div class="slack">
         <div v-if="!slackInt">
           <a
@@ -34,20 +36,80 @@
 </template>
 
 <script>
+const axios = require("axios");
 import { mapActions, mapGetters } from "vuex";
+// import store from "./../store";
 export default {
   name: "Home",
+  data: function () {
+    return {
+      uid: "",
+      Name: "",
+    };
+  },
   computed: {
     ...mapGetters("user", {
       loggedIn: "loggedIn",
       userProfile: "userProfile",
       slackInt: "slackInt",
+      tested: "tested",
+      UID: "UID",
     }),
+  },
+  watch: {
+    // uid: function (val) {console.log("uid value changed ", val),
+    // Name: function (val) {console.log("uid value changed", val)
   },
   methods: {
     ...mapActions("user", {
       send: "send",
+      test: "test",
+      slacker: "slacker",
     }),
+    codeGrep() {
+      this.test({ name: "hello maletha ji" });
+      // console.log("uid is ", this.uid);
+      // console.log("tested is", this.tested);
+      console.log("in codeGrep");
+      var urlParams = new URLSearchParams(window.location.search);
+      var params = Object.fromEntries(urlParams.entries());
+      var code = params.code;
+      // console.log(code);
+      if (code) {
+        const clientID = `${process.env.VUE_SLACK_CLIENT_ID}`;
+        const clientSECRET = `${process.env.VUE_SLACK_CLIENT_SECRET}`;
+        axios
+          .post(
+            "https://slack.com/api/oauth.v2.access",
+            new URLSearchParams({
+              code,
+              client_id: clientID,
+              client_secret: clientSECRET,
+            }).toString(),
+            {
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+            }
+          )
+          .then((res) => {
+            // console.log("token data ", res.data);
+            this.slacker({
+              webhook: res.data.incoming_webhook.url,
+              uid: this.uid,
+            });
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
+    },
+  },
+  mounted() {
+    this.codeGrep();
+  },
+  created() {
+    this.uid = localStorage.getItem("uid");
   },
 };
 </script>
