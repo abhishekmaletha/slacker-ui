@@ -37,7 +37,7 @@
 <script>
 const axios = require("axios");
 import { mapActions, mapGetters } from "vuex";
-// import store from "./../store";
+import store from "./../store";
 export default {
   name: "Home",
   data: function () {
@@ -70,10 +70,11 @@ export default {
       // console.log("uid is ", this.uid);
       // console.log("tested is", this.tested);
       console.log("in codeGrep");
+      //console.log(this.loggedIn);
       var urlParams = new URLSearchParams(window.location.search);
       var params = Object.fromEntries(urlParams.entries());
       var code = params.code;
-      console.log(code);
+      //console.log(code);
       if (code) {
         const clientID = `${process.env.VUE_SLACK_CLIENT_ID}`;
         const clientSECRET = `${process.env.VUE_SLACK_CLIENT_SECRET}`;
@@ -103,9 +104,28 @@ export default {
           });
       }
     },
+    webhookValidator() {
+      // console.log("webhook validation called", store.state.webhook);
+      if (store.state.webhook) store.commit(`user/slackInt`);
+    },
+    validator() {
+      // console.log("uid in validator", this.uid);
+      axios
+        .get(`https://slacker-api-server.herokuapp.com/api/student/${this.uid}`)
+        .then(function (response) {
+          // console.log(response.data.webhook);
+          store.commit(`user/WEBHOOK`, response.data.webhook);
+          if (response.data.webhook) store.commit(`user/SLACKSTATE`);
+          // console.log("webhook in state ", store.state.webhookURL);
+        })
+        .catch(function (error) {
+          console.log("user not logged in", error);
+        });
+    },
   },
   mounted() {
     this.codeGrep();
+    this.validator();
   },
   created() {
     this.uid = localStorage.getItem("uid");
