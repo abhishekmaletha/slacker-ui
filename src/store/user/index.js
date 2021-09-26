@@ -53,14 +53,14 @@ const actions = {
         try {
             const data = await firebase.auth().signInWithPopup(provider);
             //console.log('data in login ', data.user.uid);
-            axios.get(`http://localhost:3000/api/student/${data.user.uid}`).then(function (response) {
+            axios.get(`${process.env.VUE_API_HOST}student/${data.user.uid}`).then(function (response) {
                 // handle success
                 console.log('put data ', response);
             })
                 .catch(function (error) {
                     // handle error
                     console.log('new user ', error);
-                    axios.post(`http://localhost:3000/api/student/${data.user.uid}`, {
+                    axios.post(`${process.env.VUE_API_HOST}student/${data.user.uid}`, {
                         'name': data.user.displayName,
                         'webhook': ''
                     }).then(function (response) {
@@ -86,7 +86,7 @@ const actions = {
         }
     },
     async send() {
-        axios.post(`http://localhost:3000/api/mssg/${localStorage.getItem("uid")}`)
+        axios.post(`${process.env.VUE_API_HOST}mssg/${localStorage.getItem("uid")}`)
             .then(function (response) {
                 console.log('mssg send successfully', response);
                 return true;

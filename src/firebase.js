@@ -4,13 +4,13 @@ import 'firebase/compat/firestore';
 // import { ref, onUnmounted } from 'vue'
 
 firebase.initializeApp({
-    apiKey: "AIzaSyBgBLWACBvXnwEWh8Q3SYnjP568QVtnHpg",
-    authDomain: "slacker-e96cc.firebaseapp.com",
-    projectId: "slacker-e96cc",
-    storageBucket: "slacker-e96cc.appspot.com",
-    messagingSenderId: "599289058120",
-    appId: "1:599289058120:web:5aac4cdaf9397189f3197d",
-    measurementId: "G-2RW4FCFJ7F"
+    apiKey: process.env.VUE_API_KEY,
+    authDomain: process.env.VUE_AUTH_DOMAIN,
+    projectId: process.env.VUE_PROJECT_ID,
+    storageBucket: process.env.VUE_STORAGE_BUCKET,
+    messagingSenderId: process.env.VUE_MESSAGING_SENDER_ID,
+    appId: process.env.VUE_APP_ID,
+    measurementId: process.env.VUE_MEASUREMENT_ID
 });
 const db = firebase.firestore();
 const usersCollection = db.collection('users');
