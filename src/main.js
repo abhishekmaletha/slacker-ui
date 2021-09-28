@@ -5,6 +5,7 @@ import vuetify from './plugins/vuetify'
 import store from './store'
 import Vuetify from 'vuetify/lib'
 import './auth'
+export const bus = new Vue();
 Vue.config.productionTip = false
 Vue.use(Vuetify);
 new Vue({

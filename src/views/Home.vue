@@ -16,6 +16,10 @@
       {{ userProfile.name }} has been logged in via Google Authentication
       <!-- <p v-if="tested">tested</p>
       <p v-else>failed</p> -->
+      <div class="enable-salck" v-if="slackInt">
+        <v-switch v-model="enable_slack" @click="slackSwitch()"></v-switch>
+      </div>
+
       <div class="slack">
         <div v-if="!slackInt">
           <a
@@ -28,7 +32,9 @@
               srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"
           /></a>
         </div>
-        <div v-else><v-btn @click="send">send</v-btn></div>
+        <div v-else>
+          <v-btn @click="send" v-bind="{ disabled: enable_slack }">send</v-btn>
+        </div>
       </div>
     </v-banner>
   </div>
@@ -36,6 +42,7 @@
 
 <script>
 const axios = require("axios");
+import { bus } from "../main";
 import { mapActions, mapGetters } from "vuex";
 import store from "./../store";
 export default {
@@ -44,6 +51,7 @@ export default {
     return {
       uid: "",
       Name: "",
+      enable_slack: store.getters.enabled_slack,
     };
   },
   computed: {
@@ -53,6 +61,7 @@ export default {
       slackInt: "slackInt",
       tested: "tested",
       UID: "UID",
+      enabled_slack: "enabled_slack",
     }),
   },
   watch: {
@@ -64,13 +73,14 @@ export default {
       send: "send",
       test: "test",
       slacker: "slacker",
+      toggleSlack: "toggleSlack",
     }),
+    slackSwitch() {
+      console.log("slack is ", this.enable_slack);
+      this.toggleSlack({ uid: this.uid, slacked: this.enable_slack });
+    },
     codeGrep() {
-      // this.test({ name: "hello maletha ji" });
-      // console.log("uid is ", this.uid);
-      // console.log("tested is", this.tested);
       console.log("in codeGrep");
-      //console.log(this.loggedIn);
       var urlParams = new URLSearchParams(window.location.search);
       var params = Object.fromEntries(urlParams.entries());
       var code = params.code;
@@ -97,6 +107,7 @@ export default {
             this.slacker({
               webhook: res.data.incoming_webhook.url,
               uid: this.uid,
+              slacked: false,
             });
           })
           .catch((e) => {
@@ -109,13 +120,21 @@ export default {
       if (store.state.webhook) store.commit(`user/slackInt`);
     },
     validator() {
-      // console.log("uid in validator", this.uid);
       axios
-        .get(`https://slacker-api-server.herokuapp.com/api/student/${this.uid}`)
+        .get(`${process.env.VUE_API_HOST}student/${this.uid}`)
         .then(function (response) {
-          // console.log(response.data.webhook);
-          store.commit(`user/WEBHOOK`, response.data.webhook);
-          if (response.data.webhook) store.commit(`user/SLACKSTATE`);
+          // console.log("validator response ", response.data);
+          if (response.data.webhook) {
+            store.commit(`user/WEBHOOK`, response.data.webhook);
+            store.commit(`user/SLACKSTATE`);
+            store.commit("user/ENABLED_SLACK", response.data.slack_enabled);
+            // console.log(
+            //   "switch changed to ",
+            //   response.data.slack_enabled,
+            //   " in validator"
+            // );
+            bus.$emit("slack-changed", response.data.slack_enabled);
+          } else console.log("webhook not set");
           // console.log("webhook in state ", store.state.webhookURL);
         })
         .catch(function (error) {
@@ -124,8 +143,16 @@ export default {
     },
   },
   mounted() {
+    console.log(this.$maletha);
     this.codeGrep();
-    this.validator();
+    if (this.uid) this.validator();
+    //this.enable_slack = store.getters.enabled_slack;
+    //console.log("this.enable_slack ", this.enable_slack);
+    // console.log("slack in mounted ", store.state.enabled_slack);
+    bus.$on("slack-changed", (e) => {
+      // console.log(e);
+      this.enable_slack = e;
+    });
   },
   created() {
     this.uid = localStorage.getItem("uid");

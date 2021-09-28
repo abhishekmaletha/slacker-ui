@@ -6,7 +6,8 @@ const state = {
     slackInt: false,
     webhookURL: '',
     tested: false,
-    UID: ''
+    UID: '',
+    enabled_slack: true
 };
 
 const getters = {
@@ -16,6 +17,7 @@ const getters = {
     webhookURL: ({ webhookURL }) => webhookURL,
     tested: ({ tested }) => tested,
     UID: ({ UID }) => UID,
+    enabled_slack: ({ enabled_slack }) => enabled_slack,
 
 };
 
@@ -26,7 +28,8 @@ const mutations = {
             name: userProfile.displayName,
             picture: userProfile.photoURL,
         };
-        state.UID = userProfile.uid
+        state.UID = userProfile.uid,
+            state.enabled_slack = true
     },
     LOGOUT(state) {
         state.loggedIn = false;
@@ -40,6 +43,9 @@ const mutations = {
     },
     TESTED(state) {
         state.tested = true;
+    },
+    ENABLED_SLACK(state, data) {
+        state.enabled_slack = data
     }
 };
 
@@ -58,11 +64,13 @@ const actions = {
                 console.log('put data ', response);
             })
                 .catch(function (error) {
+                    console.log('switch changed to ', true, ' in login');
                     // handle error
                     console.log('new user ', error);
                     axios.post(`${process.env.VUE_API_HOST}student/${data.user.uid}`, {
                         'name': data.user.displayName,
-                        'webhook': ''
+                        'webhook': '',
+                        'slack_enabled': true
                     }).then(function (response) {
                         console.log(response);
                     }).catch((error) => {
@@ -100,20 +108,43 @@ const actions = {
         commit('TESTED');
     },
     async slacker({ commit }, userData) {
+        console.log('switch changed to ', userData.slacked, ' in slacker');
+        console.log("in salcker")
         // console.log('inside slacker', userData)
         // console.log('UID in slacker', userData.uid);
         axios.put(`https://slacker-api-server.herokuapp.com/api/student/${userData.uid}`, {
-            'webhook': userData.webhook
+            'webhook': userData.webhook,
+            'slack_enabled': userData.slacked,
         }).then(function (response) {
             console.log(response);
             commit('WEBHOOK', 'webhook url');
             commit('SLACKSTATE');
+            commit('ENABLED_SLACK', false);
         })
             .catch(function (error) {
                 console.log(error);
             });
         // commit('user/SLACKSTATE');
-
+    },
+    async getUser({ commit }, data) {
+        axios.get(`${process.env.VUE_API_HOST}student/${data.user.uid}`)
+            .then((response) => { console.log("user data ", response) })
+            .catch((error) => {
+                console.log(error);
+            })
+        commit('TESTED');
+    },
+    async toggleSlack({ commit }, userData) {
+        console.log('switch changed to ', userData.slacked, ' in toggleSlack');
+        axios.put(`https://slacker-api-server.herokuapp.com/api/student/${userData.uid}`, {
+            'slack_enabled': userData.slacked,
+        }).then(function (response) {
+            console.log(response);
+            commit('ENABLED_SLACK', userData.slacked);
+        })
+            .catch(function (error) {
+                console.log(error);
+            });
     }
 };
 
